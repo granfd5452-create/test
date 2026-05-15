@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shift Handover App</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Daily Shift Handover App</h1>
+      <p>Form-first handover + live dashboard (no backend required)</p>
+    </header>
+
+    <main class="layout">
+      <section class="card form-card">
+        <h2>New Shift Handover</h2>
+        <form id="handoverForm">
+          <fieldset>
+            <legend>1) Shift identification</legend>
+            <label>Date <input type="date" name="date" required /></label>
+            <label>Shift
+              <select name="shift" required>
+                <option value="">Select...</option>
+                <option>Morning</option>
+                <option>Afternoon</option>
+                <option>Night</option>
+              </select>
+            </label>
+            <label>Department
+              <select name="department" required>
+                <option value="">Select...</option>
+                <option>Rolling Mill</option>
+                <option>Finishing</option>
+                <option>Casting</option>
+                <option>Packaging</option>
+              </select>
+            </label>
+            <label>Outgoing supervisor <input name="outgoingSupervisor" required /></label>
+            <label>Incoming supervisor <input name="incomingSupervisor" required /></label>
+          </fieldset>
+
+          <fieldset>
+            <legend>2) Production summary</legend>
+            <label>Target production <input type="number" name="targetProduction" min="0" required /></label>
+            <label>Actual production <input type="number" name="actualProduction" min="0" required /></label>
+            <label>Reason for shortfall
+              <select name="shortfallReason">
+                <option value="">No shortfall</option>
+                <option>Machine breakdown</option>
+                <option>Material shortage</option>
+                <option>Manpower</option>
+                <option>Quality hold</option>
+              </select>
+            </label>
+            <label>Total scrap / waste <input type="number" name="scrap" min="0" /></label>
+            <label>Primary scrap cause
+              <select name="scrapCause">
+                <option value="">Select...</option>
+                <option>Material defect</option>
+                <option>Setup error</option>
+                <option>Operator error</option>
+                <option>Machine fault</option>
+                <option>Unknown</option>
+              </select>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>3) Machine & equipment status</legend>
+            <label>Main line status
+              <select name="machineStatus" required>
+                <option value="">Select...</option>
+                <option>Running</option>
+                <option>Stopped - maintenance</option>
+                <option>Stopped - breakdown</option>
+                <option>Standby</option>
+              </select>
+            </label>
+            <label>Any breakdowns?
+              <select name="breakdown" required>
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </label>
+            <label>Breakdown description <input name="breakdownDescription" /></label>
+            <label>Total downtime (minutes) <input type="number" min="0" name="downtime" /></label>
+          </fieldset>
+
+          <fieldset>
+            <legend>4) Quality status</legend>
+            <label>Any quality issues?
+              <select name="qualityIssue" required>
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </label>
+            <label>Issue description <input name="qualityDescription" /></label>
+            <label>Affected lot numbers <input name="lotNumbers" /></label>
+          </fieldset>
+
+          <fieldset>
+            <legend>5) Safety</legend>
+            <label>Any incidents or near-misses?
+              <select name="incident" required>
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </label>
+            <label>Incident description <input name="incidentDescription" /></label>
+            <label>First aid required?
+              <select name="firstAid">
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>6-8) Materials, handover notes, manpower</legend>
+            <label>Raw material stock level
+              <select name="materialLevel" required>
+                <option>Sufficient (>50%)</option>
+                <option>Low (20-50%)</option>
+                <option>Critical (<20%)</option>
+              </select>
+            </label>
+            <label>Material needing replenishment <input name="materialReplenishment" /></label>
+            <label>Tasks pending for next shift <textarea name="tasksPending" rows="2"></textarea></label>
+            <label>Critical info for incoming supervisor <textarea name="criticalInfo" rows="2"></textarea></label>
+            <label>Ongoing issues to monitor <textarea name="ongoingIssues" rows="2"></textarea></label>
+            <label>Workers on shift <input type="number" min="0" name="workersCount" required /></label>
+            <label>Absentees <input name="absentees" /></label>
+            <label>Shift rating (1-5) <input type="number" name="shiftRating" min="1" max="5" required /></label>
+            <label>Requires manager escalation?
+              <select name="escalation" required>
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </label>
+            <label>Escalation reason <input name="escalationReason" /></label>
+          </fieldset>
+
+          <div class="form-actions">
+            <button type="submit">Save Handover</button>
+            <button type="button" id="resetData" class="danger">Reset All Data</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card dashboard-card">
+        <h2>Live Dashboard</h2>
+
+        <div class="export-bar">
+          <label>Report Period
+            <select id="reportPeriod">
+              <option value="daily">Daily</option>
+              <option value="weekly" selected>Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="all">All</option>
+            </select>
+          </label>
+          <button type="button" data-export="csv">Export CSV</button>
+          <button type="button" data-export="excel">Export Excel</button>
+          <button type="button" data-export="pdf">Export PDF</button>
+        </div>
+
+        <div class="kpis">
+          <article><h3>Open High Priority</h3><p id="kpiHigh">0</p></article>
+          <article><h3>Unresolved Incidents</h3><p id="kpiIncidents">0</p></article>
+          <article><h3>Shifts This Week</h3><p id="kpiWeek">0</p></article>
+          <article><h3>Avg Shift Rating</h3><p id="kpiRating">0.0</p></article>
+        </div>
+
+        <div class="charts">
+          <div>
+            <h3>Actual vs Target (last 7 entries)</h3>
+            <canvas id="prodChart" width="600" height="220"></canvas>
+          </div>
+          <div>
+            <h3>Missed Target by Shift</h3>
+            <canvas id="missedChart" width="600" height="220"></canvas>
+          </div>
+        </div>
+
+        <h3>Action for Next Shift</h3>
+        <table id="tasksTable">
+          <thead><tr><th>Date</th><th>Dept</th><th>Shift</th><th>Task</th><th>Priority</th></tr></thead>
+          <tbody></tbody>
+        </table>
+
+        <h3>Open Incidents</h3>
+        <table id="incidentsTable">
+          <thead><tr><th>Date</th><th>Dept</th><th>Shift</th><th>Description</th><th>First Aid</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
